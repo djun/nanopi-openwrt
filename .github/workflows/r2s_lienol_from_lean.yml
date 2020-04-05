@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - '.github/workflows/r2s_lienol_from_lean.yml'
+      - '.github/workflows/r2s_lienol_from_lean.yml_'
   schedule:
     - cron: '09 08 * * *'
 
@@ -48,7 +48,7 @@ jobs:
 
       - name: Patch Kernel
         run: |
-          . patch_kernel_5.4.22.sh
+          . patch_kernel_5.4.sh
           sed -i -r 's/# (CONFIG_.*_ERRATUM_.*?) is.*/\1=y/g' kernel/arch/arm64/configs/nanopi-r2_linux_defconfig
 
       - name: Mods
@@ -100,6 +100,7 @@ jobs:
           CONFIG_PACKAGE_luci-app-passwall_INCLUDE_simple-obfs=y
           CONFIG_PACKAGE_luci-app-passwall_INCLUDE_v2ray-plugin=y
           CONFIG_PACKAGE_luci-app-openclash=y
+          CONFIG_PACKAGE_luci-app-zerotier=y
           # CONFIG_PACKAGE_luci-app-accesscontrol is not set
           # CONFIG_PACKAGE_luci-app-nlbwmon is not set
           # CONFIG_PACKAGE_luci-app-pppoe-relay is not set
@@ -110,7 +111,6 @@ jobs:
           # CONFIG_PACKAGE_luci-app-v2ray-server is not set
           # CONFIG_PACKAGE_luci-app-vsftpd is not set
           # CONFIG_PACKAGE_luci-app-vssr_INCLUDE_ShadowsocksR_Socks is not set
-          # CONFIG_PACKAGE_luci-app-zerotier is not set
           # CONFIG_TARGET_ROOTFS_TARGZ is not set
           # CONFIG_OPENSSL_ENGINE_BUILTIN_DEVCRYPTO is not set
           # CONFIG_PACKAGE_kmod-crypto-authenc is not set
@@ -121,7 +121,10 @@ jobs:
           cd friendlywrt
           git config --local user.email "action@github.com" && git config --local user.name "GitHub Action"
           git remote add upstream https://github.com/Lienol/openwrt && git fetch upstream
-          git rebase adc1a9a3676b8d7be1b48b5aed185a94d8e42728^ --onto upstream/dev-lean-lede -X theirs
+          git checkout upstream/dev-lean-lede -b tmp
+          git mv README.md README && git commit -m 'undo rename readme for rebasing'
+          git checkout origin/master-v19.07.1
+          git rebase adc1a9a3676b8d7be1b48b5aed185a94d8e42728^ --onto tmp -X theirs
           git revert --no-edit f092ca098e80c667b10cdd1dba328506a2673c1d
           git checkout upstream/dev-lean-lede -- feeds.conf.default
           cd package/lean/
@@ -136,6 +139,7 @@ jobs:
           sed -i 's/option fullcone\t1/option fullcone\t0/' package/network/config/firewall/files/firewall.config
           sed -i '/8.8.8.8/d' package/base-files/files/root/setup.sh
           mv ../../scripts/check_wan4.sh package/base-files/files/usr/bin && sed -i '/exit/i\/bin/sh /usr/bin/check_wan4.sh &' package/base-files/files/etc/rc.local
+          mv ../../scripts/autoupdate.sh package/base-files/files/root/au.sh && chmod +x package/base-files/files/root/au.sh
           echo -e '\nDYC Build\n' >> package/base-files/files/etc/banner
 
       - name: Add OpenClash
