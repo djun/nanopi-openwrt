@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - '.github/workflows/r2s_lienol_from_lean_mod_by_djun.yml'
+      - '.github/workflows/r2s_lienol_from_lean_mod_by_djun.yml_'
   schedule:
     - cron: '09 08 * * *'
 
